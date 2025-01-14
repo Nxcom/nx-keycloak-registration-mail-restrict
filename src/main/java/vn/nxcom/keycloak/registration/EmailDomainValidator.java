@@ -29,11 +29,14 @@ public class EmailDomainValidator implements Authenticator {
         String email = user.getEmail();
         if (email == null || email.isEmpty()) {
             context.getEvent().detail(Details.REASON, "Email is required");
-            context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).build());
+            context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).entity("Email is required").build());
             return;
         }
 
+        // Extract domain from the user's email
         String domain = email.split("@")[1];
+
+        // Get allowed domains from configuration
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
         if (config == null || !config.getConfig().containsKey(ALLOWED_DOMAINS_KEY)) {
             context.failure(AuthenticationFlowError.INTERNAL_ERROR, Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Configuration missing").build());
@@ -45,11 +48,13 @@ public class EmailDomainValidator implements Authenticator {
                                            .map(String::trim)
                                            .collect(Collectors.toSet());
 
+        // Validate the email domain
         if (!allowedDomains.contains(domain)) {
             context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).entity("Invalid email domain").build());
             return;
         }
 
+        // Check if the email is already registered
         if (isEmailRegistered(email, context)) {
             context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).entity("Email already registered").build());
             return;
@@ -60,11 +65,12 @@ public class EmailDomainValidator implements Authenticator {
 
     private boolean isEmailRegistered(String email, AuthenticationFlowContext context) {
         UserModel existingUser = context.getSession().users().getUserByEmail(email, context.getRealm());
-        return existingUser != null;
+        return existingUser != null; // Return true if the email is already registered
     }
 
     @Override
     public void action(AuthenticationFlowContext context) {
+        // No additional actions required
     }
 
     @Override
@@ -74,17 +80,21 @@ public class EmailDomainValidator implements Authenticator {
 
     @Override
     public boolean configuredFor(AuthenticationFlowContext context) {
-        return true;  // This can be customized if you need more checks here
+        // This method should return true if the authenticator is properly configured
+        return true;
     }
 
     @Override
     public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+        // No specific actions required for this validator
     }
 
     @Override
     public void close() {
+        // Cleanup if needed
     }
 
+    // Factory Class for the Authenticator
     public static class Factory implements AuthenticatorFactory {
 
         @Override
@@ -136,7 +146,7 @@ public class EmailDomainValidator implements Authenticator {
 
         @Override
         public void close() {
-            // Cleanup resources
+            // Cleanup resources if needed
         }
 
         @Override
