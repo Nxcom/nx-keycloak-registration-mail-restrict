@@ -1,4 +1,4 @@
-package com.example;
+package net.micedre.keycloak.registration;
 
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.Authenticator;
