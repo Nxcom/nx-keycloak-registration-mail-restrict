@@ -87,6 +87,11 @@ public class EmailDomainValidator implements Authenticator {
         // Cleanup if needed
     }
 
+    @Override
+    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+        // No specific actions required for this validator
+    }
+
     // Factory Class
     public static class Factory implements AuthenticatorFactory {
 
