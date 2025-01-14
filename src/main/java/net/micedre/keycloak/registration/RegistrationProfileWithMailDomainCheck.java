@@ -1,97 +1,145 @@
-package net.micedre.keycloak.registration;
+package com.example;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.core.MultivaluedMap;
-
-import org.keycloak.authentication.FormAction;
-import org.keycloak.authentication.ValidationContext;
-import org.keycloak.authentication.forms.RegistrationPage;
-import org.keycloak.authentication.forms.RegistrationProfile;
-import org.keycloak.events.Details;
-import org.keycloak.events.Errors;
+import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.Authenticator;
+import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.utils.FormMessage;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.services.messages.Messages;
-import org.keycloak.services.validation.Validation;
 
-public class RegistrationProfileWithMailDomainCheck extends RegistrationProfile implements FormAction {
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-   public static final String PROVIDER_ID = "registration-mail-check-action";
+public class EmailDomainValidator implements Authenticator {
 
-   @Override
-    public String getDisplayType() {
-        return "Profile Validation with email domain check";
-   }
+    private static final String ALLOWED_DOMAINS_KEY = "allowedDomains";
 
+    @Override
+    public void authenticate(AuthenticationFlowContext context) {
+        UserModel user = context.getUser();
+        if (user == null) {
+            context.failure();
+            return;
+        }
 
-   @Override
-   public String getId() {
-      return PROVIDER_ID;
-   }
+        String email = user.getEmail();
+        if (email == null || email.isEmpty()) {
+            context.failureChallenge(AuthenticationFlowContext.ERROR_CODE_EMAIL_REQUIRED);
+            return;
+        }
 
-   @Override
-    public boolean isConfigurable() {
+        // Extract domain from the user's email
+        String domain = email.split("@")[1];
+
+        // Get allowed domains from configuration
+        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
+        if (config == null || !config.getConfig().containsKey(ALLOWED_DOMAINS_KEY)) {
+            context.failureChallenge(AuthenticationFlowContext.ERROR_CODE_INVALID_EMAIL);
+            return;
+        }
+
+        String allowedDomainsConfig = config.getConfig().get(ALLOWED_DOMAINS_KEY);
+        Set<String> allowedDomains = Arrays.stream(allowedDomainsConfig.split(","))
+                                           .map(String::trim)
+                                           .collect(Collectors.toSet());
+
+        // Validate the email domain
+        if (!allowedDomains.contains(domain)) {
+            context.failureChallenge(AuthenticationFlowContext.ERROR_CODE_INVALID_EMAIL);
+            return;
+        }
+
+        // Check if the email is already registered
+        if (isEmailRegistered(email, context)) {
+            context.failureChallenge(AuthenticationFlowContext.ERROR_CODE_EMAIL_EXISTS);
+            return;
+        }
+
+        context.success();
+    }
+
+    private boolean isEmailRegistered(String email, AuthenticationFlowContext context) {
+        UserModel existingUser = context.getSession().users().getUserByEmail(email, context.getRealm());
+        return existingUser != null; // Return true if the email is already registered
+    }
+
+    @Override
+    public void action(AuthenticationFlowContext context) {
+        // No additional actions required
+    }
+
+    @Override
+    public boolean requiresUser() {
         return true;
-   }
+    }
 
+    @Override
+    public boolean configuredFor(AuthenticationFlowContext context) {
+        return true;
+    }
 
-   @Override
-   public String getHelpText() {
-      return "Adds validation of domain emails for registration";
-   }
+    @Override
+    public void close() {
+        // Cleanup if needed
+    }
 
-   private static final List<ProviderConfigProperty> CONFIG_PROPERTIES = new ArrayList<ProviderConfigProperty>();
+    // Factory Class
+    public static class Factory implements AuthenticatorFactory {
 
-   static {
-      ProviderConfigProperty property;
-      property = new ProviderConfigProperty();
-      property.setName("validDomains");
-      property.setLabel("Valid domain for emails");
-      property.setType(ProviderConfigProperty.MULTIVALUED_STRING_TYPE);
-      property.setHelpText("List mail domains authorized to register");
-      CONFIG_PROPERTIES.add(property);
-   }
+        @Override
+        public Authenticator create(KeycloakSession session) {
+            return new EmailDomainValidator();
+        }
 
-   @Override
-   public List<ProviderConfigProperty> getConfigProperties() {
-      return CONFIG_PROPERTIES;
-   }
+        @Override
+        public String getId() {
+            return "email-domain-validator";
+        }
 
-   @Override
-   public void validate(ValidationContext context) {
-      MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
+        @Override
+        public String getDisplayType() {
+            return "Email Domain Validator";
+        }
 
-      List<FormMessage> errors = new ArrayList<>();
-      String email = formData.getFirst(Validation.FIELD_EMAIL);
+        @Override
+        public String getHelpText() {
+            return "Validates user email domains and checks for existing email registrations.";
+        }
 
-      boolean emailDomainValid = false;
-      AuthenticatorConfigModel mailDomainConfig = context.getAuthenticatorConfig();
-      String eventError = Errors.INVALID_REGISTRATION;
+        @Override
+        public List<ProviderConfigProperty> getConfigProperties() {
+            ProviderConfigProperty allowedDomainsProp = new ProviderConfigProperty();
+            allowedDomainsProp.setName(ALLOWED_DOMAINS_KEY);
+            allowedDomainsProp.setLabel("Allowed Email Domains");
+            allowedDomainsProp.setHelpText("Comma-separated list of allowed email domains (e.g., company.com, example.org).");
+            allowedDomainsProp.setType(ProviderConfigProperty.STRING_TYPE);
+            allowedDomainsProp.setDefaultValue("company.com,example.org");
 
-      String[] domains = mailDomainConfig.getConfig().getOrDefault("validDomains","exemple.org").split("##");
-      for (String domain : domains) {
-         if (email.endsWith(domain)) {
-            emailDomainValid = true;
-            break;
-         }
-      }
-      if (!emailDomainValid) {
-         System.out.println("here");
-         context.getEvent().detail(Details.EMAIL, email);
-         errors.add(new FormMessage(RegistrationPage.FIELD_EMAIL, Messages.INVALID_EMAIL));
-      }
-      if (errors.size() > 0) {
-         context.error(eventError);
-         context.validationError(formData, errors);
-         return;
+            return Arrays.asList(allowedDomainsProp);
+        }
 
-      } else {
-         context.success();
-      }
+        @Override
+        public boolean isConfigurable() {
+            return true;
+        }
 
-   }
+        @Override
+        public void init(KeycloakSessionFactory factory) {
+            // Initialization if needed
+        }
 
+        @Override
+        public void postInit(KeycloakSessionFactory factory) {
+            // Post initialization if needed
+        }
+
+        @Override
+        public void close() {
+            // Cleanup if needed
+        }
+    }
 }
