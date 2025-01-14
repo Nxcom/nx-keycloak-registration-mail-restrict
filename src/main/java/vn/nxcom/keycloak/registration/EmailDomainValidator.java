@@ -1,12 +1,11 @@
 package net.micedre.keycloak.registration;
 
+import jakarta.ws.rs.core.Response;
 import org.keycloak.authentication.AuthenticationFlowContext;
+import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.AuthenticatorConfigModel;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.provider.ProviderConfigProperty;
 
 import java.util.Arrays;
@@ -22,23 +21,21 @@ public class EmailDomainValidator implements Authenticator {
     public void authenticate(AuthenticationFlowContext context) {
         UserModel user = context.getUser();
         if (user == null) {
-            context.failure();
+            context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).build());
             return;
         }
 
         String email = user.getEmail();
         if (email == null || email.isEmpty()) {
-            context.failureChallenge(AuthenticationFlowContext.ERROR_CODE_EMAIL_REQUIRED);
+            context.getEvent().detail(Details.REASON, "Email is required");
+            context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).build());
             return;
         }
 
-        // Extract domain from the user's email
         String domain = email.split("@")[1];
-
-        // Get allowed domains from configuration
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
         if (config == null || !config.getConfig().containsKey(ALLOWED_DOMAINS_KEY)) {
-            context.failureChallenge(AuthenticationFlowContext.ERROR_CODE_INVALID_EMAIL);
+            context.failure(AuthenticationFlowError.INTERNAL_ERROR, Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Configuration missing").build());
             return;
         }
 
@@ -47,15 +44,13 @@ public class EmailDomainValidator implements Authenticator {
                                            .map(String::trim)
                                            .collect(Collectors.toSet());
 
-        // Validate the email domain
         if (!allowedDomains.contains(domain)) {
-            context.failureChallenge(AuthenticationFlowContext.ERROR_CODE_INVALID_EMAIL);
+            context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).entity("Invalid email domain").build());
             return;
         }
 
-        // Check if the email is already registered
         if (isEmailRegistered(email, context)) {
-            context.failureChallenge(AuthenticationFlowContext.ERROR_CODE_EMAIL_EXISTS);
+            context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).entity("Email already registered").build());
             return;
         }
 
@@ -64,12 +59,11 @@ public class EmailDomainValidator implements Authenticator {
 
     private boolean isEmailRegistered(String email, AuthenticationFlowContext context) {
         UserModel existingUser = context.getSession().users().getUserByEmail(email, context.getRealm());
-        return existingUser != null; // Return true if the email is already registered
+        return existingUser != null;
     }
 
     @Override
     public void action(AuthenticationFlowContext context) {
-        // No additional actions required
     }
 
     @Override
@@ -83,16 +77,13 @@ public class EmailDomainValidator implements Authenticator {
     }
 
     @Override
-    public void close() {
-        // Cleanup if needed
+    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-        // No specific actions required for this validator
+    public void close() {
     }
 
-    // Factory Class
     public static class Factory implements AuthenticatorFactory {
 
         @Override
@@ -134,17 +125,24 @@ public class EmailDomainValidator implements Authenticator {
 
         @Override
         public void init(KeycloakSessionFactory factory) {
-            // Initialization if needed
         }
 
         @Override
         public void postInit(KeycloakSessionFactory factory) {
-            // Post initialization if needed
         }
 
         @Override
         public void close() {
-            // Cleanup if needed
+        }
+
+        @Override
+        public String getReferenceCategory() {
+            return null;
+        }
+
+        @Override
+        public boolean isUserSetupAllowed() {
+            return false;
         }
     }
 }
