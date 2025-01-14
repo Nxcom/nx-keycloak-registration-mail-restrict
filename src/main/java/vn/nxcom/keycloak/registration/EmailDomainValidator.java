@@ -7,6 +7,7 @@ import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.*;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.events.Details;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,7 +74,7 @@ public class EmailDomainValidator implements Authenticator {
 
     @Override
     public boolean configuredFor(AuthenticationFlowContext context) {
-        return true;
+        return true;  // This can be customized if you need more checks here
     }
 
     @Override
@@ -125,14 +126,17 @@ public class EmailDomainValidator implements Authenticator {
 
         @Override
         public void init(KeycloakSessionFactory factory) {
+            // Initialization logic if needed
         }
 
         @Override
         public void postInit(KeycloakSessionFactory factory) {
+            // Post initialization logic if needed
         }
 
         @Override
         public void close() {
+            // Cleanup resources
         }
 
         @Override
