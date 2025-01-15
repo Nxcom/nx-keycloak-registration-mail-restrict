@@ -8,6 +8,7 @@ import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.models.*;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.events.Details;
+import org.keycloak
 
 import java.util.Arrays;
 import java.util.List;
