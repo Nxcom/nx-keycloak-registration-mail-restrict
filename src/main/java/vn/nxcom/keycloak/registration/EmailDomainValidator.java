@@ -9,6 +9,7 @@ import org.keycloak.authentication.AuthenticatorFactory;
 import org.keycloak.authentication.AuthenticationExecutionRequirement;
 import org.keycloak.events.Details;
 import org.keycloak.models.AuthenticatorConfigModel;
+import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
@@ -147,8 +148,8 @@ public class EmailDomainValidator implements Authenticator {
         }
 
         @Override
-        public List<AuthenticationExecutionRequirement> getRequirementChoices() {
-            return AuthenticationExecutionRequirement.REQUIREMENT_CHOICES;
+        public AuthenticationExecutionModel.Requirement[] getRequirementChoices() {
+            return REQUIREMENT_CHOICES;
         }
     }
 }
