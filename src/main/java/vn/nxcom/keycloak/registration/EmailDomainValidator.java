@@ -60,23 +60,11 @@ public class EmailDomainValidator implements Authenticator {
             return;
         }
 
-        // Check if the email is already registered
-        if (isEmailRegistered(email, context)) {
-            context.failure(AuthenticationFlowError.INVALID_USER, Response.status(Response.Status.BAD_REQUEST).entity("Email already registered").build());
-            return;
-        }
-
         context.success();
-    }
-
-    private boolean isEmailRegistered(String email, AuthenticationFlowContext context) {
-        UserModel existingUser = context.getSession().users().getUserByEmail(email, context.getRealm());
-        return existingUser != null;
     }
 
     @Override
     public void action(AuthenticationFlowContext context) {
-        // No additional actions required
     }
 
     @Override
@@ -91,15 +79,12 @@ public class EmailDomainValidator implements Authenticator {
 
     @Override
     public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-        // No specific actions required
     }
 
     @Override
     public void close() {
-        // Cleanup if needed
     }
 
-    // Factory Class
     public static class Factory implements AuthenticatorFactory {
 
         @Override
@@ -119,7 +104,7 @@ public class EmailDomainValidator implements Authenticator {
 
         @Override
         public String getHelpText() {
-            return "Validates user email domains and checks for existing email registrations.";
+            return "Validates user email domains.";
         }
 
         @Override
@@ -141,17 +126,14 @@ public class EmailDomainValidator implements Authenticator {
 
         @Override
         public void init(Config.Scope config) {
-            // Initialization logic if needed
         }
 
         @Override
         public void postInit(KeycloakSessionFactory factory) {
-            // Post initialization logic if needed
         }
 
         @Override
         public void close() {
-            // Cleanup resources if needed
         }
 
         @Override
