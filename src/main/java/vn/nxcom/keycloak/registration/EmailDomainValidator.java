@@ -1,14 +1,19 @@
-package net.micedre.keycloak.registration;
+package vn.nxcom.keycloak.registration;
 
+java
+Copy code
 import jakarta.ws.rs.core.Response;
+import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.models.*;
+import org.keycloak.models.AuthenticatorConfigModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.KeycloakSessionFactory;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.events.Details;
-import org.keycloak;
 
 import java.util.Arrays;
 import java.util.List;
