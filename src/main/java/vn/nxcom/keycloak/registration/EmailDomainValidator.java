@@ -65,7 +65,7 @@ public class EmailDomainValidator implements Authenticator {
 
     private boolean isEmailRegistered(String email, AuthenticationFlowContext context) {
         UserModel existingUser = context.getSession().users().getUserByEmail(email, context.getRealm());
-        return existingUser != null; // Return true if the email is already registered
+        return existingUser != null;
     }
 
     @Override
@@ -75,18 +75,17 @@ public class EmailDomainValidator implements Authenticator {
 
     @Override
     public boolean requiresUser() {
-        return true;
+        return false;
     }
 
     @Override
-    public boolean configuredFor(AuthenticationFlowContext context) {
-        // This method should return true if the authenticator is properly configured
+    public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
         return true;
     }
 
     @Override
     public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
-        // No specific actions required for this validator
+        // No specific actions required
     }
 
     @Override
@@ -94,7 +93,7 @@ public class EmailDomainValidator implements Authenticator {
         // Cleanup if needed
     }
 
-    // Factory Class for the Authenticator
+    // Factory Class
     public static class Factory implements AuthenticatorFactory {
 
         @Override
@@ -135,7 +134,7 @@ public class EmailDomainValidator implements Authenticator {
         }
 
         @Override
-        public void init(KeycloakSessionFactory factory) {
+        public void init(Config.Scope config) {
             // Initialization logic if needed
         }
 
