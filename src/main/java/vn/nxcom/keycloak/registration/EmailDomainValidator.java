@@ -6,7 +6,6 @@ import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.authentication.AuthenticatorFactory;
-import org.keycloak.authentication.AuthenticationExecutionRequirement;
 import org.keycloak.events.Details;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.AuthenticationExecutionModel;
