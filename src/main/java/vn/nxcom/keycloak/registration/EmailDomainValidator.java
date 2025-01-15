@@ -1,7 +1,5 @@
 package vn.nxcom.keycloak.registration;
 
-java
-Copy code
 import jakarta.ws.rs.core.Response;
 import org.keycloak.Config;
 import org.keycloak.authentication.AuthenticationFlowContext;
