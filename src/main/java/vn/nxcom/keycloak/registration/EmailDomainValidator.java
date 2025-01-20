@@ -2,12 +2,11 @@ package net.micedre.keycloak.registration;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import org.keycloak.authentication.FormAction;
+import org.keycloak.authentication.FormActionFactory;
 import org.keycloak.authentication.ValidationContext;
-import org.keycloak.authentication.forms.RegistrationPage;
-import org.keycloak.authentication.forms.RegistrationProfile;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
 import org.keycloak.models.AuthenticatorConfigModel;
@@ -16,7 +15,7 @@ import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.validation.Validation;
 
-public class RegistrationProfileWithMailDomainCheck extends RegistrationProfile implements FormAction {
+public class RegistrationProfileWithMailDomainCheck implements FormAction, FormActionFactory {
 
     public static final String PROVIDER_ID = "registration-mail-check-action";
 
@@ -82,7 +81,7 @@ public class RegistrationProfileWithMailDomainCheck extends RegistrationProfile 
 
         if (!emailDomainValid) {
             context.getEvent().detail(Details.EMAIL, email);
-            errors.add(new FormMessage(RegistrationPage.FIELD_EMAIL, Messages.INVALID_EMAIL));
+            errors.add(new FormMessage(Validation.FIELD_EMAIL, Messages.INVALID_EMAIL));
         }
 
         if (!errors.isEmpty()) {
@@ -92,4 +91,29 @@ public class RegistrationProfileWithMailDomainCheck extends RegistrationProfile 
             context.success();
         }
     }
-}
+
+    @Override
+    public void buildPage(FormActionContext context, MultivaluedMap<String, String> formData) {
+        // No additional page rendering needed
+    }
+
+    @Override
+    public boolean requiresUser() {
+        return false;
+    }
+
+    @Override
+    public boolean configuredFor(org.keycloak.models.KeycloakSession session, org.keycloak.models.RealmModel realm, org.keycloak.models.UserModel user) {
+        return true;
+    }
+
+    @Override
+    public void setRequiredActions(org.keycloak.models.KeycloakSession session, org.keycloak.models.RealmModel realm, org.keycloak.models.UserModel user) {
+        // No required actions
+    }
+
+    @Override
+    public void close() {
+        // No resources to close
+    }
+} 
