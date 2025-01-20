@@ -47,7 +47,7 @@
           <configuration>
               <archive>
                   <manifestEntries>
-                      <Keycloak-Provider>vn.nxcom.EmailDomainValidator</Keycloak-Provider>
+                      <Keycloak-Provider>vn.nxcom.keycloak.registration.EmailDomainValidator</Keycloak-Provider>
                   </manifestEntries>
               </archive>
           </configuration>
