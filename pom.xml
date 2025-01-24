@@ -1,17 +1,18 @@
-<project
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>vn.nxcom.keycloak</groupId>
-  <artifactId>nx-keycloak-registration-mail-restrict</artifactId>
-  <version>1.0</version>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>vn.nxcom.keycloak</groupId>
+    <artifactId>registration-mail-check-action</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>Email Domain Validator</name>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <keycloak.version>26.0.5</keycloak.version>
   </properties>
+  
   <dependencies>
     <dependency>
       <groupId>org.keycloak</groupId>
@@ -37,6 +38,12 @@
       <scope>provided</scope>
       <version>${keycloak.version}</version>
     </dependency>
+    <dependency>
+        <groupId>com.google.auto.service</groupId>
+        <artifactId>auto-service</artifactId>
+        <version>1.0.1</version>
+        <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -47,7 +54,7 @@
           <configuration>
               <archive>
                   <manifestEntries>
-                      <Keycloak-Provider>vn.nxcom.keycloak.registration.EmailDomainValidator$Factory</Keycloak-Provider>
+                      <Keycloak-Provider>vn.nxcom.keycloak.RegistrationProfileWithMailDomainCheck</Keycloak-Provider>
                   </manifestEntries>
               </archive>
           </configuration>
