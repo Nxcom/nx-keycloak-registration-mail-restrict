@@ -100,7 +100,7 @@ public class RegistrationProfileWithMailDomainCheck implements FormAction, FormA
 
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
         // Lấy danh sách từ config, cách nhau bởi dấu phảy. Nếu không có gì trong config thì mặc định là example.org (dummy)
-        String[] validDomains = config.getConfig().getOrDefault("validDomains", "example.org").split(",");
+        String[] validDomains = config.getConfig().getOrDefault("validDomains", "example.org").split("##");
         validDomains = Arrays.stream(validDomains)  // Convert to Stream for processing
                             .map(String::trim)  // Trim each domain
                             .toArray(String[]::new);  // Convert back to array
