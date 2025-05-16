@@ -99,15 +99,15 @@ public class RegistrationProfileWithMailDomainCheck implements FormAction, FormA
         }
 
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
+        String domainConfig = config != null
+                ? config.getConfig().getOrDefault("validDomains", "")
+                : "";
 
-        String[] validDomains = config.getConfig().getOrDefault("validDomains", "example.org").split("##");
-        validDomains = Arrays.stream(validDomains)  // Convert to Stream for processing
-                            .map(String::trim)  // Trim each domain
-                            .toArray(String[]::new);  // Convert back to array
+        String[] validDomains = domainConfig.split("[,\\s]+"); // comma or whitespace
 
         boolean isValid = false;
         for (String domain : validDomains) {
-            if (email.trim().endsWith(domain.trim())) {
+            if (!domain.isBlank() && email.trim().endsWith(domain.trim())) {
                 isValid = true;
                 break;
             }
@@ -117,13 +117,13 @@ public class RegistrationProfileWithMailDomainCheck implements FormAction, FormA
             context.getEvent().detail(Details.EMAIL, email);
             context.error(Errors.INVALID_REGISTRATION);
             String allowedDomains = String.join(", ", validDomains);
-            String errorMessage = "Your email is not in allowed domains: " + allowedDomains + "<br>Please use a valid one, or contact IT support for adding your domain if you think it should be added!";
+            String errorMessage = "Your email is not in allowed domains: " + allowedDomains +
+                    "<br>Please use a valid one, or contact IT support for adding your domain if you think it should be added!";
             context.validationError(formData, List.of(new FormMessage(Validation.FIELD_EMAIL, errorMessage)));
         } else {
             context.success();
         }
     }
-
 
     @Override
     public void success(FormContext context) {
