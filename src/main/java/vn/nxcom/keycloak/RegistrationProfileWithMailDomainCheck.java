@@ -77,8 +77,8 @@ public class RegistrationProfileWithMailDomainCheck implements FormAction, FormA
         ProviderConfigProperty property = new ProviderConfigProperty();
         property.setName("validDomains");
         property.setLabel("Valid Domains for Emails");
-        property.setType(ProviderConfigProperty.MULTIVALUED_STRING_TYPE);
-        property.setHelpText("List of email domains authorized for registration.");
+        property.setType(ProviderConfigProperty.STRING_TYPE);
+        property.setHelpText("List of email domains authorized for registration, separated by a comma. Eg. eup.vn, nxcom.vn);
         CONFIG_PROPERTIES.add(property);
     }
 
