@@ -78,7 +78,7 @@ public class RegistrationProfileWithMailDomainCheck implements FormAction, FormA
         property.setName("validDomains");
         property.setLabel("Valid Domains for Emails");
         property.setType(ProviderConfigProperty.STRING_TYPE);
-        property.setHelpText("List of email domains authorized for registration, separated by a comma. Eg. eup.vn, nxcom.vn);
+        property.setHelpText("List of email domains authorized for registration, separated by a comma. Eg. eup.vn, nxcom.vn");
         CONFIG_PROPERTIES.add(property);
     }
 
